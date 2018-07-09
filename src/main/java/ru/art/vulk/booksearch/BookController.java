@@ -13,14 +13,7 @@ public class BookController {
 
     @Autowired
     BookRepository repository;
-//    @ElementCollection
     Map<String, Long> phrases = new HashMap();
-
-//    private IPhraseService phraseService;
-//    @Autowired
-//    BookController (IPhraseService phraseService){
-//        this.phraseService = phraseService;
-//    }
 
     BookController (){}
 
@@ -39,7 +32,7 @@ public class BookController {
         return book + ".json создан";
     }
 
-    @GetMapping("/{book}/top2phrases/{n}")
+    @GetMapping("/{book}/topPhrases/{n}")
     public String topPhrases(@PathVariable String book, @PathVariable int n){
         List<String> words = new ArrayList<>();
         StringBuffer word = new StringBuffer();
@@ -64,21 +57,18 @@ public class BookController {
             }
             words.removeIf(e -> e.equals(""));
             if (n <= words.size()) {
+                StringBuilder s = new StringBuilder();
                 for (int i = 0; i < words.size() - n + 1; i++) {
-                    StringBuilder s = new StringBuilder();
-                    for (int j = 0 + i; j < n + i; j++) {
+                    for (int j = i; j < n + i; j++) {
                         s.append(words.get(j) + " ");
                     }
                     String string = s.toString();
                     if (phrases.containsKey(string)){
                         phrases.put(string, (phrases.get(string) + 1));
                     } else phrases.put(string, 1L);
-//                phrases.add(new PhraseEntity(words.get(i) + " " + words.get(i + 1)));
-//                PhraseEntity phraseEntity = new PhraseEntity();
-//                phraseEntity.setText(words.get(i) + " " + words.get(i + 1));
+                    s.setLength(0);
                 }
             }
-//            phraseService.addPhrase(phrases);
             words.clear();
         }
         result = phrases.entrySet().stream()
