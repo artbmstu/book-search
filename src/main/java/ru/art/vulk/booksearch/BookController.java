@@ -10,28 +10,27 @@ import java.util.stream.Collectors;
 
 @RestController
 public class BookController {
-    private List<String> bookRows = BookReader.readBook();
 
     @Autowired
     BookRepository repository;
 
-    @GetMapping("/book")
-    public String addStudent() throws Exception{
-
-        try (FileWriter file = new FileWriter("book.json")) {
+    @GetMapping("/{book}")
+    public String addStudent(@PathVariable String book) throws Exception{
+        List<String> bookRows = BookReader.readBook(book);
+        try (FileWriter file = new FileWriter(book + ".json")) {
             int count = 0;
             for (String rowText :
                     bookRows) {
                 count++;
-                file.append("{\"create\":{\"_index\":\"books\",\"_type\" : \"book\", \"_id\" : \"" + count + "\"}}\n");
+                file.append("{\"create\":{\"_index\":\"books\",\"_type\" : \""+ book +"\", \"_id\" : \"" + count + "\"}}\n");
                 file.append("{\"row\" : \"" + count + "\", \"text\" : \"" + rowText + "\"}\n");
             }
         }
-        return "book.json создан";
+        return book + ".json создан";
     }
 
-    @GetMapping("/book/top2phrases")
-    public String topPhrases(){
+    @GetMapping("/{book}/top2phrases")
+    public String topPhrases(@PathVariable String book){
         List<String> words = new ArrayList<>();
         List<String> phrases = new ArrayList<>();
         StringBuilder word = new StringBuilder();
