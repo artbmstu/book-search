@@ -13,6 +13,16 @@ public class BookController {
 
     @Autowired
     BookRepository repository;
+//    @ElementCollection
+    Map<String, Long> phrases = new HashMap();
+
+//    private IPhraseService phraseService;
+//    @Autowired
+//    BookController (IPhraseService phraseService){
+//        this.phraseService = phraseService;
+//    }
+
+    BookController (){}
 
     @GetMapping("/{book}")
     public String addStudent(@PathVariable String book) throws Exception{
@@ -29,15 +39,17 @@ public class BookController {
         return book + ".json создан";
     }
 
-    @GetMapping("/{book}/top2phrases")
-    public String topPhrases(@PathVariable String book){
+    @GetMapping("/{book}/top2phrases/{n}")
+    public String topPhrases(@PathVariable String book, @PathVariable int n){
         List<String> words = new ArrayList<>();
-        List<String> phrases = new ArrayList<>();
-        StringBuilder word = new StringBuilder();
+        StringBuffer word = new StringBuffer();
         Iterator<BookEntity> iterator = repository.findAll().iterator();
-
+        Map<String, Long> result = new HashMap();
+        int count = 0;
+        String text;
+        Map sorted = null;
         while (iterator.hasNext()) {
-            String text;
+            count++;
             if ((text = iterator.next().getText()) != null) {
                 text = text.toLowerCase().replaceAll("[^a-zA-Zа-яА-Я ]", "");
                 for (int i = 0; i < text.length(); i++) {
@@ -51,48 +63,27 @@ public class BookController {
                 words.add(word.toString());
             }
             words.removeIf(e -> e.equals(""));
-            for (int i = 0; i < words.size() - 1; i++) {
-                phrases.add(words.get(i) + " " + words.get(i + 1));
+            if (n <= words.size()) {
+                for (int i = 0; i < words.size() - n + 1; i++) {
+                    StringBuilder s = new StringBuilder();
+                    for (int j = 0 + i; j < n + i; j++) {
+                        s.append(words.get(j) + " ");
+                    }
+                    String string = s.toString();
+                    if (phrases.containsKey(string)){
+                        phrases.put(string, (phrases.get(string) + 1));
+                    } else phrases.put(string, 1L);
+//                phrases.add(new PhraseEntity(words.get(i) + " " + words.get(i + 1)));
+//                PhraseEntity phraseEntity = new PhraseEntity();
+//                phraseEntity.setText(words.get(i) + " " + words.get(i + 1));
+                }
             }
+//            phraseService.addPhrase(phrases);
             words.clear();
         }
-        Map<String, Long> counts =
-                phrases.stream().collect(Collectors.groupingBy(e -> e, Collectors.counting()));
-        Map result = counts.entrySet().stream()
+        result = phrases.entrySet().stream()
                 .sorted(Map.Entry.<String, Long>comparingByValue().reversed()).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
                         (oldValue, newValue) -> oldValue, LinkedHashMap::new));
         return result.toString();
     }
-
-//    @GetMapping("/student/all")
-//    public List<BookEntity> getStudents(){
-//        Iterator<BookEntity> iterator = repository.findAll().iterator();
-//        List<BookEntity> students = new ArrayList<>();
-//        while (iterator.hasNext()){
-//            students.add(iterator.next());
-//        }
-//        return students;
-//    }
-//
-//    @GetMapping("/student/{id}")
-//    public Optional<BookEntity> getStudent(@PathVariable Integer id){
-//        return repository.findById(id);
-//    }
-//
-//    @PutMapping("/student/{id}")
-//    public BookEntity updateStudent(@PathVariable Integer id, @RequestBody BookEntity student){
-//        Optional<BookEntity> std = repository.findById(id);
-//        if (std.isPresent()){
-//            BookEntity s = std.get();
-//            s.setName(student.getName());
-//            return repository.save(s);
-//        }
-//        else return null;
-//    }
-//
-//    @DeleteMapping("/student/{id}")
-//    public String deleteStudent(@PathVariable Integer id){
-//        repository.deleteById(id);
-//        return "Document Deleted";
-//    }
 }
