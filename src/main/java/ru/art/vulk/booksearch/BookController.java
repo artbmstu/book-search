@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.art.vulk.booksearch.reader.BookReader;
 
 import java.io.FileWriter;
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -38,6 +39,8 @@ public class BookController {
 
     @GetMapping("/{book}/topPhrases/{n}")
     public String topPhrases(@PathVariable String book, @PathVariable int n) {
+        Long startTime = Instant.now().toEpochMilli();
+
         List<String> words = new ArrayList<>();
         StringBuilder word = new StringBuilder();
         StringBuilder phrase = new StringBuilder();
@@ -80,6 +83,7 @@ public class BookController {
                 .sorted(Map.Entry.<String, Long>comparingByValue().reversed()).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
                         (oldValue, newValue) -> oldValue, LinkedHashMap::new));
         phrases.clear();
+        System.out.println(Instant.now().toEpochMilli() - startTime);
         return result.toString();
     }
 }
